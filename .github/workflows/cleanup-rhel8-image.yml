@@ -16,10 +16,10 @@ name: Cleanup RHEL8 CI Image Versions
 # (e.g. magnesj/ResInsight, user).
 
 on:
-  schedule:
-    # 03:00 UTC -- after the nightly image build (00:00) and the unit-test
-    # consumer (02:00) have both finished, so we never race them.
-    - cron: "0 3 * * *"
+  # schedule:
+  #   # 03:00 UTC -- after the nightly image build (00:00) and the unit-test
+  #   # consumer (02:00) have both finished, so we never race them.
+  #   - cron: "0 3 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
