@@ -5,9 +5,9 @@ name: Build RHEL8 CI Image
 # binary cache so CI runs do not have to reprovision them every time.
 
 on:
-  schedule:
-    # Nightly at 00:00 UTC, before the RHEL8 unit tests run at 02:00 UTC.
-    - cron: "0 0 * * *"
+  # schedule:
+  #   # Nightly at 00:00 UTC, before the RHEL8 unit tests run at 02:00 UTC.
+  #   - cron: "0 0 * * *"
   push:
     paths:
       - ".github/docker/Dockerfile.rhel8"
