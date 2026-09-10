@@ -1,390 +1,390 @@
-name: ResInsight Build With Cache
+# name: ResInsight Build With Cache
 
-on:
-  push:
-  pull_request:
-  schedule:
-    # Every day at 1am to make sure we have a build cache for the current date
-    # build cache is
-    - cron: '0 1 * * *'
+# on:
+#   push:
+#   pull_request:
+#   schedule:
+#     # Every day at 1am to make sure we have a build cache for the current date
+#     # build cache is
+#     - cron: '0 1 * * *'
 
-concurrency:
-  group: build-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: build-${{ github.event.pull_request.number || github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  build:
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type: [Release]
-        config:
-          - {
-              name: "Windows_2022_qt_610",
-              os: windows-2022,
-              cc: "cl",
-              cxx: "cl",
-              build-python-module: true,
-              execute-unit-tests: true,
-              execute-pytests: true,
-              publish-to-pypi: false,
-              enable-asserts: false,
-              vcpkg-bootstrap: bootstrap-vcpkg.bat,
-              vcpkg-triplet: x64-windows-release,
-              buildcache-max-size: 1610612736,
-              qt-version: 6.10.1,
-              ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
-            }
-          - {
-              name: "Ubuntu 24.04 gcc",
-              os: ubuntu-24.04,
-              cc: "gcc-14",
-              cxx: "g++-14",
-              build-python-module: true,
-              execute-unit-tests: true,
-              execute-pytests: true,
-              publish-to-pypi: true,
-              enable-asserts: false,
-              vcpkg-bootstrap: bootstrap-vcpkg.sh,
-              vcpkg-triplet: x64-linux-release,
-              buildcache-max-size: 524288000,
-              qt-version: 6.7.0,
-              ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
-            }
-          - {
-              name: "Ubuntu 24.04 clang-19",
-              os: ubuntu-24.04,
-              cc: "clang-19",
-              cxx: "clang++-19",
-              build-python-module: true,
-              execute-unit-tests: true,
-              execute-pytests: false,
-              publish-to-pypi: false,
-              enable-asserts: true,
-              vcpkg-bootstrap: bootstrap-vcpkg.sh,
-              vcpkg-triplet: x64-linux-release,
-              buildcache-max-size: 524288000,
-              qt-version: 6.7.0,
-              ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
-            }
-    env:
-      BUILD_TYPE: Release
-      BUILDCACHE_DIR: ${{ github.workspace }}/buildcache_dir
-      BUILDCACHE_ACCURACY: SLOPPY
-      # Per-configuration size limit, in bytes. The cache must hold a full
-      # build with room to spare; at the limit buildcache evicts entries the
-      # same build still needs and the hit ratio collapses. MSVC objects are
-      # roughly twice the size of the gcc/clang ones, so Windows gets 1.5 GiB
-      # while Linux stays at 500 MB.
-      BUILDCACHE_MAX_CACHE_SIZE: ${{ matrix.config.buildcache-max-size }}
-      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-      # Supply-chain hardening: never install Python packages published within
-      # the last week, to avoid pulling freshly published (potentially
-      # compromised) releases. Honored by all `uv pip install` invocations below.
-      UV_EXCLUDE_NEWER: "1 week"
+# jobs:
+#   build:
+#     runs-on: ${{ matrix.config.os }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         build_type: [Release]
+#         config:
+#           - {
+#               name: "Windows_2022_qt_610",
+#               os: windows-2022,
+#               cc: "cl",
+#               cxx: "cl",
+#               build-python-module: true,
+#               execute-unit-tests: true,
+#               execute-pytests: true,
+#               publish-to-pypi: false,
+#               enable-asserts: false,
+#               vcpkg-bootstrap: bootstrap-vcpkg.bat,
+#               vcpkg-triplet: x64-windows-release,
+#               buildcache-max-size: 1610612736,
+#               qt-version: 6.10.1,
+#               ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
+#             }
+#           - {
+#               name: "Ubuntu 24.04 gcc",
+#               os: ubuntu-24.04,
+#               cc: "gcc-14",
+#               cxx: "g++-14",
+#               build-python-module: true,
+#               execute-unit-tests: true,
+#               execute-pytests: true,
+#               publish-to-pypi: true,
+#               enable-asserts: false,
+#               vcpkg-bootstrap: bootstrap-vcpkg.sh,
+#               vcpkg-triplet: x64-linux-release,
+#               buildcache-max-size: 524288000,
+#               qt-version: 6.7.0,
+#               ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
+#             }
+#           - {
+#               name: "Ubuntu 24.04 clang-19",
+#               os: ubuntu-24.04,
+#               cc: "clang-19",
+#               cxx: "clang++-19",
+#               build-python-module: true,
+#               execute-unit-tests: true,
+#               execute-pytests: false,
+#               publish-to-pypi: false,
+#               enable-asserts: true,
+#               vcpkg-bootstrap: bootstrap-vcpkg.sh,
+#               vcpkg-triplet: x64-linux-release,
+#               buildcache-max-size: 524288000,
+#               qt-version: 6.7.0,
+#               ri-unit-test-path: "ApplicationLibCode/UnitTests/ResInsight-tests",
+#             }
+#     env:
+#       BUILD_TYPE: Release
+#       BUILDCACHE_DIR: ${{ github.workspace }}/buildcache_dir
+#       BUILDCACHE_ACCURACY: SLOPPY
+#       # Per-configuration size limit, in bytes. The cache must hold a full
+#       # build with room to spare; at the limit buildcache evicts entries the
+#       # same build still needs and the hit ratio collapses. MSVC objects are
+#       # roughly twice the size of the gcc/clang ones, so Windows gets 1.5 GiB
+#       # while Linux stays at 500 MB.
+#       BUILDCACHE_MAX_CACHE_SIZE: ${{ matrix.config.buildcache-max-size }}
+#       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+#       # Supply-chain hardening: never install Python packages published within
+#       # the last week, to avoid pulling freshly published (potentially
+#       # compromised) releases. Honored by all `uv pip install` invocations below.
+#       UV_EXCLUDE_NEWER: "1 week"
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          submodules: true
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v7
+#         with:
+#           submodules: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+#       - name: Set up Python
+#         uses: actions/setup-python@v7
+#         with:
+#           python-version: "3.12"
+#       - name: Display Python version
+#         run: python -c "import sys; print(sys.version)"
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+#       - name: Set up uv
+#         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
 
-      - name: Get Python executable path
-        shell: bash
-        id: python-path
-        run: echo "PYTHON_EXECUTABLE=$(python -c 'import sys; import pathlib; print (pathlib.PurePath(sys.executable).as_posix())')" >> $GITHUB_OUTPUT
+#       - name: Get Python executable path
+#         shell: bash
+#         id: python-path
+#         run: echo "PYTHON_EXECUTABLE=$(python -c 'import sys; import pathlib; print (pathlib.PurePath(sys.executable).as_posix())')" >> $GITHUB_OUTPUT
 
-      - name: Print Python path
-        run: echo "${{ steps.python-path.outputs.PYTHON_EXECUTABLE }}"
+#       - name: Print Python path
+#         run: echo "${{ steps.python-path.outputs.PYTHON_EXECUTABLE }}"
 
-      - name: Install dependencies
-        run: |
-          # rips/_version.py is normally generated by CMake; create a dev
-          # fallback so the editable install below can resolve the version.
-          echo '__version__ = "0.0.0.dev"' > GrpcInterface/Python/rips/_version.py
-          uv pip install --system -e "GrpcInterface/Python[dev]"
+#       - name: Install dependencies
+#         run: |
+#           # rips/_version.py is normally generated by CMake; create a dev
+#           # fallback so the editable install below can resolve the version.
+#           echo '__version__ = "0.0.0.dev"' > GrpcInterface/Python/rips/_version.py
+#           uv pip install --system -e "GrpcInterface/Python[dev]"
 
-      - name: Use MSVC (Windows)
-        if: contains(matrix.config.os, 'windows')
-        uses: TheMrMilchmann/setup-msvc-dev@v4
-        with:
-          arch: x64
+#       - name: Use MSVC (Windows)
+#         if: contains(matrix.config.os, 'windows')
+#         uses: TheMrMilchmann/setup-msvc-dev@v4
+#         with:
+#           arch: x64
 
-      - name: Setup buildcache
-        uses: CeetronSolutions/setup-buildcache-action@v1.1
+#       - name: Setup buildcache
+#         uses: CeetronSolutions/setup-buildcache-action@v1.1
 
-      - name: Get current date
-        id: current-time
-        shell: bash
-        run: echo "formattedTime=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+#       - name: Get current date
+#         id: current-time
+#         shell: bash
+#         run: echo "formattedTime=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
-      - name: Print time stamp
-        run: echo "timestamp ${{ steps.current-time.outputs.formattedTime }}"
+#       - name: Print time stamp
+#         run: echo "timestamp ${{ steps.current-time.outputs.formattedTime }}"
 
-      - name: Restore Buildcache
-        id: cache-buildcache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.BUILDCACHE_DIR }}
-          key: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-${{ steps.current-time.outputs.formattedTime }}
-          # Fall back to the most recent cache for this configuration if no
-          # cache exists for the current date
-          restore-keys: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-
-      - name: Create Folder for buildcache
-        run: New-Item ${{ env.BUILDCACHE_DIR }} -ItemType "directory" -Force
-        shell: pwsh
+#       - name: Restore Buildcache
+#         id: cache-buildcache
+#         uses: actions/cache/restore@v6
+#         with:
+#           path: ${{ env.BUILDCACHE_DIR }}
+#           key: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-${{ steps.current-time.outputs.formattedTime }}
+#           # Fall back to the most recent cache for this configuration if no
+#           # cache exists for the current date
+#           restore-keys: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-
+#       - name: Create Folder for buildcache
+#         run: New-Item ${{ env.BUILDCACHE_DIR }} -ItemType "directory" -Force
+#         shell: pwsh
 
-      - name: Set apt mirror
-        # see https://github.com/actions/runner-images/issues/7048
-        if: contains( matrix.config.os, 'ubuntu')
-        run: |
-          # make sure there is a `\t` between URL and `priority:*` attributes
-          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
-          curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
-          sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
+#       - name: Set apt mirror
+#         # see https://github.com/actions/runner-images/issues/7048
+#         if: contains( matrix.config.os, 'ubuntu')
+#         run: |
+#           # make sure there is a `\t` between URL and `priority:*` attributes
+#           printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+#           curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+#           sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
 
-      - name: Install Linux dependencies
-        if: contains( matrix.config.os, 'ubuntu')
-        run: |
-          sudo apt-get update --option="APT::Acquire::Retries=3"
-          sudo apt-get install --option="APT::Acquire::Retries=3" libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev libhdf5-dev
+#       - name: Install Linux dependencies
+#         if: contains( matrix.config.os, 'ubuntu')
+#         run: |
+#           sudo apt-get update --option="APT::Acquire::Retries=3"
+#           sudo apt-get install --option="APT::Acquire::Retries=3" libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev libhdf5-dev
 
-      - name: Install clang-19
-        if: contains( matrix.config.cc, 'clang')
-        run: |
-          set -e
+#       - name: Install clang-19
+#         if: contains( matrix.config.cc, 'clang')
+#         run: |
+#           set -e
           
-          # Add LLVM repository
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main" | sudo tee /etc/apt/sources.list.d/llvm-19.list
-          echo "deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main" | sudo tee -a /etc/apt/sources.list.d/llvm-19.list
+#           # Add LLVM repository
+#           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+#           echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main" | sudo tee /etc/apt/sources.list.d/llvm-19.list
+#           echo "deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main" | sudo tee -a /etc/apt/sources.list.d/llvm-19.list
           
-          # Update package list and install clang-19
-          sudo apt-get update --option="APT::Acquire::Retries=3"
-          sudo apt-get install --option="APT::Acquire::Retries=3" -y \
-            clang-19 \
-            lldb-19 \
-            lld-19 \
-            clangd-19 \
-            clang-tidy-19 \
-            clang-format-19 \
-            clang-tools-19 \
-            libc++-19-dev \
-            libc++abi-19-dev \
-            libomp-19-dev
+#           # Update package list and install clang-19
+#           sudo apt-get update --option="APT::Acquire::Retries=3"
+#           sudo apt-get install --option="APT::Acquire::Retries=3" -y \
+#             clang-19 \
+#             lldb-19 \
+#             lld-19 \
+#             clangd-19 \
+#             clang-tidy-19 \
+#             clang-format-19 \
+#             clang-tools-19 \
+#             libc++-19-dev \
+#             libc++abi-19-dev \
+#             libomp-19-dev
           
-          # Verify installation
-          clang-19 --version
-          clang++-19 --version
-          echo "clang-19 installation completed successfully"
+#           # Verify installation
+#           clang-19 --version
+#           clang++-19 --version
+#           echo "clang-19 installation completed successfully"
 
-      - name: Install gcc-14
-        if: contains( matrix.config.cc, 'gcc-14')
-        run: |
-          sudo apt-get install --option="APT::Acquire::Retries=3" gcc-14 g++-14
+#       - name: Install gcc-14
+#         if: contains( matrix.config.cc, 'gcc-14')
+#         run: |
+#           sudo apt-get install --option="APT::Acquire::Retries=3" gcc-14 g++-14
 
-      - name: Install Qt
-        uses: CeetronSolutions/install-qt-action@bump-node24
-        with:
-          version: ${{ matrix.config.qt-version }}
-          dir: "${{ github.workspace }}/Qt/"
-          cache: true
-          setup-python: false
-          modules: "qtnetworkauth"
+#       - name: Install Qt
+#         uses: CeetronSolutions/install-qt-action@bump-node24
+#         with:
+#           version: ${{ matrix.config.qt-version }}
+#           dir: "${{ github.workspace }}/Qt/"
+#           cache: true
+#           setup-python: false
+#           modules: "qtnetworkauth"
 
-      - name: vcpkg bootstrap
-        run: |
-          ThirdParty/vcpkg/${{ matrix.config.vcpkg-bootstrap }}
+#       - name: vcpkg bootstrap
+#         run: |
+#           ThirdParty/vcpkg/${{ matrix.config.vcpkg-bootstrap }}
 
-      - name: Get vcpkg submodule SHA
-        id: vcpkg-sha
-        shell: bash
-        run: echo "sha=$(git rev-parse HEAD:ThirdParty/vcpkg)" >> $GITHUB_OUTPUT
+#       - name: Get vcpkg submodule SHA
+#         id: vcpkg-sha
+#         shell: bash
+#         run: echo "sha=$(git rev-parse HEAD:ThirdParty/vcpkg)" >> $GITHUB_OUTPUT
 
-      - name: Get MSVC compiler hash (Windows)
-        # vcpkg keys each binary's ABI on a SHA-1 of the actual cl.exe binary
-        # content (see ThirdParty/vcpkg/scripts/detect_compiler/CMakeLists.txt),
-        # not on the VCToolsVersion folder name. GitHub ships rebuilt cl.exe
-        # binaries under the same VCToolsVersion across runner image releases, so
-        # vcpkg's ABI hash changes while VCToolsVersion stays fixed; the restored
-        # binaries are then rejected and vcpkg rebuilds everything. Because the
-        # cache key did not change, the action skips saving the freshly built
-        # binaries, so the stale entry never refreshes and the rebuild loop
-        # persists across runs. Hash cl.exe directly so the cache key tracks
-        # exactly what vcpkg tracks: a cl.exe change yields a new key, one cold
-        # rebuild, then a successful save under the new key. cl.exe is on PATH
-        # via the "Use MSVC (Windows)" step above.
-        id: compiler-hash
-        if: contains(matrix.config.os, 'windows')
-        shell: bash
-        run: |
-          cl_path=$(cygpath -u "$(where.exe cl.exe | head -n 1 | tr -d '\r')")
-          echo "Using compiler: $cl_path"
-          echo "hash=$(sha1sum "$cl_path" | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+#       - name: Get MSVC compiler hash (Windows)
+#         # vcpkg keys each binary's ABI on a SHA-1 of the actual cl.exe binary
+#         # content (see ThirdParty/vcpkg/scripts/detect_compiler/CMakeLists.txt),
+#         # not on the VCToolsVersion folder name. GitHub ships rebuilt cl.exe
+#         # binaries under the same VCToolsVersion across runner image releases, so
+#         # vcpkg's ABI hash changes while VCToolsVersion stays fixed; the restored
+#         # binaries are then rejected and vcpkg rebuilds everything. Because the
+#         # cache key did not change, the action skips saving the freshly built
+#         # binaries, so the stale entry never refreshes and the rebuild loop
+#         # persists across runs. Hash cl.exe directly so the cache key tracks
+#         # exactly what vcpkg tracks: a cl.exe change yields a new key, one cold
+#         # rebuild, then a successful save under the new key. cl.exe is on PATH
+#         # via the "Use MSVC (Windows)" step above.
+#         id: compiler-hash
+#         if: contains(matrix.config.os, 'windows')
+#         shell: bash
+#         run: |
+#           cl_path=$(cygpath -u "$(where.exe cl.exe | head -n 1 | tr -d '\r')")
+#           echo "Using compiler: $cl_path"
+#           echo "hash=$(sha1sum "$cl_path" | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
-      - name: Get runner image version
-        # vcpkg's ABI hash covers more of the runner image than cl.exe alone: on
-        # Windows every port's ABI includes the PowerShell version, and other
-        # image-provided tools feed it as well. A PowerShell 7.6.3 -> 7.6.4 bump
-        # in image 20260728 changed all 102 ABIs while cl.exe, the vcpkg
-        # submodule and vcpkg.json stayed fixed, so the cache restored but vcpkg
-        # rejected every archive ("Restored 0 package(s)"). Since the key was
-        # unchanged the action then skipped saving, leaving the stale entry in
-        # place for good. Track the image version so any image bump gives one
-        # cold rebuild followed by a save under the new key.
-        id: image-version
-        shell: bash
-        run: echo "version=${ImageVersion:-unknown}" >> $GITHUB_OUTPUT
+#       - name: Get runner image version
+#         # vcpkg's ABI hash covers more of the runner image than cl.exe alone: on
+#         # Windows every port's ABI includes the PowerShell version, and other
+#         # image-provided tools feed it as well. A PowerShell 7.6.3 -> 7.6.4 bump
+#         # in image 20260728 changed all 102 ABIs while cl.exe, the vcpkg
+#         # submodule and vcpkg.json stayed fixed, so the cache restored but vcpkg
+#         # rejected every archive ("Restored 0 package(s)"). Since the key was
+#         # unchanged the action then skipped saving, leaving the stale entry in
+#         # place for good. Track the image version so any image bump gives one
+#         # cold rebuild followed by a save under the new key.
+#         id: image-version
+#         shell: bash
+#         run: echo "version=${ImageVersion:-unknown}" >> $GITHUB_OUTPUT
 
-      - name: Restore vcpkg cache
-        id: vcpkg-cache
-        uses: CeetronSolutions/vcpkg-cache@copilot/optimize-cache-storage-structure
-        with:
-          cache-key: ${{ runner.os }}-${{ matrix.config.cxx }}-${{ steps.image-version.outputs.version }}-${{ steps.compiler-hash.outputs.hash }}-${{ matrix.config.vcpkg-triplet }}-${{ steps.vcpkg-sha.outputs.sha }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
-          prefix: vcpkg-${{ matrix.config.cxx}}/
+#       - name: Restore vcpkg cache
+#         id: vcpkg-cache
+#         uses: CeetronSolutions/vcpkg-cache@copilot/optimize-cache-storage-structure
+#         with:
+#           cache-key: ${{ runner.os }}-${{ matrix.config.cxx }}-${{ steps.image-version.outputs.version }}-${{ steps.compiler-hash.outputs.hash }}-${{ matrix.config.vcpkg-triplet }}-${{ steps.vcpkg-sha.outputs.sha }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+#           prefix: vcpkg-${{ matrix.config.cxx}}/
           
-      - name: Print CMake version
-        shell: bash
-        run: |
-         if [ "$RUNNER_OS" = "Windows" ]; then
-           EXEC_PATH=$(where.exe cmake | head -n 1)
-         else
-           EXEC_PATH=$(which cmake)
-         fi
-         echo "Executable path: $EXEC_PATH"
-         "$EXEC_PATH" --version    
+#       - name: Print CMake version
+#         shell: bash
+#         run: |
+#          if [ "$RUNNER_OS" = "Windows" ]; then
+#            EXEC_PATH=$(where.exe cmake | head -n 1)
+#          else
+#            EXEC_PATH=$(which cmake)
+#          fi
+#          echo "Executable path: $EXEC_PATH"
+#          "$EXEC_PATH" --version    
 
-      - name: Configure
-        shell: bash
-        env:
-          VCPKG_FEATURE_FLAGS: "binarycaching" # Possibly redundant, but explicitly sets the binary caching feature flag
-          VCPKG_BINARY_SOURCES: "clear;files,${{ steps.vcpkg-cache.outputs.path }},readwrite"
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
-        run: >
-          cmake -S . -B cmakebuild
-          -DVCPKG_TARGET_TRIPLET=${{ matrix.config.vcpkg-triplet }}
-          -DVCPKG_HOST_TRIPLET=${{ matrix.config.vcpkg-triplet }}
-          -DCMAKE_INSTALL_PREFIX=cmakebuild/install
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DRESINSIGHT_INCLUDE_APPLICATION_UNIT_TESTS=true
-          -DRESINSIGHT_TREAT_WARNINGS_AS_ERRORS=true
-          -DRESINSIGHT_ENABLE_PRECOMPILED_HEADERS=false
-          -DRESINSIGHT_ENABLE_UNITY_BUILD=false
-          -DRESINSIGHT_ENABLE_ASSERTS_IN_RELEASE=${{ matrix.config.enable-asserts }}
-          -DRESINSIGHT_ENABLE_GRPC=${{ matrix.config.build-python-module }}
-          -DRESINSIGHT_GRPC_PYTHON_EXECUTABLE=${{ steps.python-path.outputs.PYTHON_EXECUTABLE }}
-          -DRESINSIGHT_GRPC_DOWNLOAD_PYTHON_MODULE=true
-          -DRESINSIGHT_ENABLE_HDF5=false
-          -DCMAKE_TOOLCHAIN_FILE=ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake
-          -G Ninja
+#       - name: Configure
+#         shell: bash
+#         env:
+#           VCPKG_FEATURE_FLAGS: "binarycaching" # Possibly redundant, but explicitly sets the binary caching feature flag
+#           VCPKG_BINARY_SOURCES: "clear;files,${{ steps.vcpkg-cache.outputs.path }},readwrite"
+#           CC: ${{ matrix.config.cc }}
+#           CXX: ${{ matrix.config.cxx }}
+#         run: >
+#           cmake -S . -B cmakebuild
+#           -DVCPKG_TARGET_TRIPLET=${{ matrix.config.vcpkg-triplet }}
+#           -DVCPKG_HOST_TRIPLET=${{ matrix.config.vcpkg-triplet }}
+#           -DCMAKE_INSTALL_PREFIX=cmakebuild/install
+#           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+#           -DRESINSIGHT_INCLUDE_APPLICATION_UNIT_TESTS=true
+#           -DRESINSIGHT_TREAT_WARNINGS_AS_ERRORS=true
+#           -DRESINSIGHT_ENABLE_PRECOMPILED_HEADERS=false
+#           -DRESINSIGHT_ENABLE_UNITY_BUILD=false
+#           -DRESINSIGHT_ENABLE_ASSERTS_IN_RELEASE=${{ matrix.config.enable-asserts }}
+#           -DRESINSIGHT_ENABLE_GRPC=${{ matrix.config.build-python-module }}
+#           -DRESINSIGHT_GRPC_PYTHON_EXECUTABLE=${{ steps.python-path.outputs.PYTHON_EXECUTABLE }}
+#           -DRESINSIGHT_GRPC_DOWNLOAD_PYTHON_MODULE=true
+#           -DRESINSIGHT_ENABLE_HDF5=false
+#           -DCMAKE_TOOLCHAIN_FILE=ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake
+#           -G Ninja
 
-      - name: Build
-        run: |
-          cmake --build cmakebuild --target install
+#       - name: Build
+#         run: |
+#           cmake --build cmakebuild --target install
 
-      - name: Stats for buildcache
-        run: buildcache -s
+#       - name: Stats for buildcache
+#         run: buildcache -s
 
-      - name: Save Buildcache
-        # Save the cache with the current date, unless a cache for the current
-        # date was already restored (cache keys are immutable and cannot be
-        # overwritten)
-        #
-        # Only save from the default branch. GitHub scopes cache writes to the
-        # current ref, and a branch can only read its own scope plus the default
-        # branch, so a cache saved from a feature branch or PR is invisible to
-        # every other branch. Those copies bring no reuse, but they do count
-        # against the 10 GB per-repository quota and evict the shared caches on
-        # the default branch.
-        if: >-
-          steps.cache-buildcache.outputs.cache-hit != 'true' &&
-          github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.BUILDCACHE_DIR }}
-          key: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-${{ steps.current-time.outputs.formattedTime }}
+#       - name: Save Buildcache
+#         # Save the cache with the current date, unless a cache for the current
+#         # date was already restored (cache keys are immutable and cannot be
+#         # overwritten)
+#         #
+#         # Only save from the default branch. GitHub scopes cache writes to the
+#         # current ref, and a branch can only read its own scope plus the default
+#         # branch, so a cache saved from a feature branch or PR is invisible to
+#         # every other branch. Those copies bring no reuse, but they do count
+#         # against the 10 GB per-repository quota and evict the shared caches on
+#         # the default branch.
+#         if: >-
+#           steps.cache-buildcache.outputs.cache-hit != 'true' &&
+#           github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+#         uses: actions/cache/save@v6
+#         with:
+#           path: ${{ env.BUILDCACHE_DIR }}
+#           key: ${{ matrix.config.os }}-${{ matrix.config.cc }}-${{ matrix.config.qt-version }}-cache-v03-${{ steps.current-time.outputs.formattedTime }}
 
-      - name: Run Unit Tests
-        if: matrix.config.execute-unit-tests
-        shell: bash
-        run: |
-          echo "Content of unit test folder "
-          ls cmakebuild/${{ matrix.config.ri-unit-test-path }}
-          cmakebuild/${{ matrix.config.ri-unit-test-path }}
+#       - name: Run Unit Tests
+#         if: matrix.config.execute-unit-tests
+#         shell: bash
+#         run: |
+#           echo "Content of unit test folder "
+#           ls cmakebuild/${{ matrix.config.ri-unit-test-path }}
+#           cmakebuild/${{ matrix.config.ri-unit-test-path }}
 
-      - name: (Python) Build Python module
-        if: matrix.config.build-python-module
-        shell: bash
-        run: |
-          uv pip install --system build wheel
-          cd GrpcInterface/Python
-          ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m build
+#       - name: (Python) Build Python module
+#         if: matrix.config.build-python-module
+#         shell: bash
+#         run: |
+#           uv pip install --system build wheel
+#           cd GrpcInterface/Python
+#           ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m build
 
-      - name: (Python) Check types using mypy
-        if: matrix.config.build-python-module
-        shell: bash
-        run: |
-          uv pip install --system mypy types-protobuf
-          cd GrpcInterface/Python
-          ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m mypy rips/*.py rips/generated/generated_classes.py
+#       - name: (Python) Check types using mypy
+#         if: matrix.config.build-python-module
+#         shell: bash
+#         run: |
+#           uv pip install --system mypy types-protobuf
+#           cd GrpcInterface/Python
+#           ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m mypy rips/*.py rips/generated/generated_classes.py
 
-      - name: Run pytest
-        if: matrix.config.execute-pytests
-        env:
-          RESINSIGHT_EXECUTABLE: ${{ runner.workspace }}/ResInsight/cmakebuild/ResInsight${{ runner.os == 'Windows' && '.exe' || '' }}
-        run: |
-          cd GrpcInterface/Python/rips
-          ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m pytest --console
+#       - name: Run pytest
+#         if: matrix.config.execute-pytests
+#         env:
+#           RESINSIGHT_EXECUTABLE: ${{ runner.workspace }}/ResInsight/cmakebuild/ResInsight${{ runner.os == 'Windows' && '.exe' || '' }}
+#         run: |
+#           cd GrpcInterface/Python/rips
+#           ${{ steps.python-path.outputs.PYTHON_EXECUTABLE }} -m pytest --console
 
-      - name: Upload python distribution folder
-        if: matrix.config.publish-to-pypi
-        uses: actions/upload-artifact@v7
-        with:
-          name: python-distribution
-          path: GrpcInterface/Python/dist
-          retention-days: 5
+#       - name: Upload python distribution folder
+#         if: matrix.config.publish-to-pypi
+#         uses: actions/upload-artifact@v7
+#         with:
+#           name: python-distribution
+#           path: GrpcInterface/Python/dist
+#           retention-days: 5
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: ResInsight-${{ matrix.config.name }}
-          path: ${{ runner.workspace }}/ResInsight/cmakebuild/install
-          retention-days: 5
+#       - name: Upload artifacts
+#         uses: actions/upload-artifact@v7
+#         with:
+#           name: ResInsight-${{ matrix.config.name }}
+#           path: ${{ runner.workspace }}/ResInsight/cmakebuild/install
+#           retention-days: 5
 
-  pypi-publish:
-    name: Upload release to PyPI
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/rips
-    permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing  
+#   pypi-publish:
+#     name: Upload release to PyPI
+#     needs: build
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: pypi
+#       url: https://pypi.org/p/rips
+#     permissions:
+#       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing  
     
-    # If this is a tagged release
-    if: startsWith(github.ref, 'refs/tags')
-    steps:
-    - name: Download python distribution folder
-      uses: actions/download-artifact@v8
-      with:
-        name: python-distribution
-        path: dist
+#     # If this is a tagged release
+#     if: startsWith(github.ref, 'refs/tags')
+#     steps:
+#     - name: Download python distribution folder
+#       uses: actions/download-artifact@v8
+#       with:
+#         name: python-distribution
+#         path: dist
 
-    - name: Display structure of downloaded files
-      run: ls -R
+#     - name: Display structure of downloaded files
+#       run: ls -R
 
-    - name: Publish Python package to pypi
-      # https://docs.pypi.org/trusted-publishers/adding-a-publisher/
-      uses: pypa/gh-action-pypi-publish@release/v1
+#     - name: Publish Python package to pypi
+#       # https://docs.pypi.org/trusted-publishers/adding-a-publisher/
+#       uses: pypa/gh-action-pypi-publish@release/v1
