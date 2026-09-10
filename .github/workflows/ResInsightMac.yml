@@ -5,10 +5,10 @@ on:
   push:
     tags:
       - '*'
-  schedule:
-    # 02:00 UTC daily, offset from ResInsightWithCache.yml's 01:00 slot
-    # so the two workflows do not contend for the same Actions runners.
-    - cron: '0 2 * * *'
+  # schedule:
+  #   # 02:00 UTC daily, offset from ResInsightWithCache.yml's 01:00 slot
+  #   # so the two workflows do not contend for the same Actions runners.
+  #   - cron: '0 2 * * *'
 
 permissions:
   contents: read
