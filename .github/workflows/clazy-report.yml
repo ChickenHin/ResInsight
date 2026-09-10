@@ -2,9 +2,9 @@ name: clazy-report
 
 on:
   workflow_dispatch:
-  schedule:
-    # Once every night
-    - cron: "0 1 * * *"
+  # schedule:
+  #   # Once every night
+  #   - cron: "0 1 * * *"
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
